@@ -1,0 +1,127 @@
+1、什么是 MyBatis ？
+	MyBatis 是支持定制化 SQL、存储过程以及高级映射的优秀的持久层框架。
+	MyBatis 避免了几乎所有的 JDBC 代码和手动设置参数以及获取结果集。
+	MyBatis 可以对配置和原生Map使用简单的 XML 或注解，
+	将接口和 Java 的 POJOs(Plain Old Java Objects,普通的 Java对象)映射成数据库中的记录。
+	
+2、MyBatis的基本用法
+	1）导入MyBatis的JAR包，JDBC驱动程序包
+	2）MyBatis的配置文件
+		a、JavaBean别名的配置
+		b、dataSource的配置
+		c、映射文件的配置
+		
+		<?xml version="1.0" encoding="UTF-8" ?>
+		<!DOCTYPE configuration
+		  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+		  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+		<configuration>
+		<properties resource="jdbc.properties"></properties>
+		
+		<typeAliases>
+			<typeAlias alias="user" type="com.gs.bean.User"/>
+		</typeAliases>
+		
+			<!-- 环境配置 -->
+		  <environments default="development">
+		    <environment id="development">
+		    	<!-- 使用JDBC的事务处理方式 -->
+		      <transactionManager type="JDBC"/>
+		      <!-- 数据源的类型：POOLED表示连接池 -->
+		      <dataSource type="POOLED">
+		        <property name="driver" value="${driver}"/>
+		        <property name="url" value="${url}"/>
+		        <property name="username" value="${username}"/>
+		        <property name="password" value="${password}"/>
+		      </dataSource>
+		      
+		    </environment>
+		  </environments>
+		  <mappers>
+		  	<mapper resource="com/gs/bean/UserMapper.xml"/>
+		  </mappers>
+		  
+		</configuration>
+		
+	3)配置映射文件
+		a、resultMap的配置（resultMap是为了能够返回多个对象，如果只需要返回单个对象，可以不配置resultMap）
+		b、使用<select></select>用于配置查询操作
+			<delete></delele>用于配置删除操作
+			<update></update>用于配置更新操作
+			<insert></insert>用于配置插入操作
+			在同一个Mapper文件中，每一个标记都必须有唯一的id与之对应，此id用于项目中来唯一确定需要做什么
+			<!DOCTYPE mapper
+			    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+			    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+			
+			<mapper namespace="com.gs.bean.User">
+				<!-- 结果映射，查询出来的哪个字段跟哪个属性关联到一起 
+					type表示此映射与哪个JavaBean关联在一起，可以使用JavaBean的全限定名，也可以配置的别名
+					id表示此结果映射的唯一编号
+				-->
+				<resultMap type="user" id="userMap">
+					<!-- id配置主键 -->
+					<id column="id" property="id"/>
+					<!-- result用于配置普通字段 -->
+					<result column="name" property="name"/>
+					<result column="pwd" property="pwd"/>
+				</resultMap>
+			
+				<!-- 使用<select></select>用于配置查询操作
+					<delete></delele>用于配置删除操作
+					<update></update>用于配置更新操作
+					<insert></insert>用于配置插入操作
+					
+					在同一个Mapper文件中，每一个操作标记都必须有唯一的id与之对应，此id用于项目中来唯一确定需要做什么
+					
+				 -->
+				 
+				 <!-- select查询中的resultMap用于表示返回的结果映射，返回一个List列表对象 -->
+				<select id="queryUser" resultMap="userMap">
+					select * from t_user
+				</select>
+				
+				<insert id="addUser" parameterType="user">
+					insert into t_user values(#{id}, #{name}, #{pwd})
+				</insert>
+			
+			</mapper>
+			
+	4)以Java项目的方式来跑项目：
+		a、读取MyBatis的配置文件
+		b、创建SqlSessionFactory
+		c、由SqlSessionFactory对象去获取SqlSession
+		d、由SqlSession调用相关的方法执行操作，mapper映射文件中的namespace与每一个操作的id唯一确定需要做什么事情
+		
+	备注：如果是做查询操作，不需要commit，如果是做增加，删除，修改操作，则需要session.commit();
+		
+3、简化DAO
+	只需要提供DAO接口，不需要提供DAO的实现，MyBatis会根据映射文件和DAO接口自动生成DAO的实现
+	注意的地方：
+	a、mapper映射文件的namespace配置成对应的DAO接口的全限定名
+	b、每一个操作的id配置成与DAO接口中的方法一致
+	
+	c、根据SqlSession.getMapper(接口的class);去获取接口的实现类
+	
+4、各种SQL操作与参数的传递
+	1)返回集合的数据：resultMap
+		<select id="" resultMap="配置的resultMap">
+			sql语句
+		</select>
+	2）返回单个数据   resultType
+		<select id="" resultType="bean的别名">
+			sql语句
+		</select>
+		
+		根据传递进来的参数去查找：第一种情况就是没有使用自动生成DAO接口的实现类的形式：session.select(第一个参数确定哪个操作，第二个查询参数)
+		第二种情况就是使用自动生成DAO接口的实现的形式：保证在映射文件中的#{}参数名称与DAO接口中的方法参数名称保持一致(也可以不一样)
+		
+	3)插入数据：parameterType="int|float|double|string|javabean"
+		<insert id="" parameterType="int">
+			#{基本数据类型的参数名称}
+				a、如果指定了parameterType，则只能支持一个参数;
+				b、如果不指定parameterType，则可以支持多个参数，但是在DAO方法的参数中，需要传递到sql语句的参数都必须添加@Param("名字")来告诉mybatis，此处的名字一定要与
+					映射文件中的参数名一致
+			#{javabean中的属性},#{javabean中的属性}
+		</insert>	
+		

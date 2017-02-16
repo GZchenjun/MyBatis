@@ -1,0 +1,23 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gs.dao.OrderInfoDAO">
+	<resultMap type="orderInfo" id="orderInfoMap">
+		<id column="id" property="id"/>
+		<result column="user_id" property="userId" />
+		<result column="user_name" property="userName" />
+		<result column="order_id" property="orderId" />
+		<result column="order_time" property="orderTime" />
+       <collection property="products" ofType="com.gs.bean.Product">
+			<id property="id" column="p_id"/>
+			<result property="name" column="p_name"/>
+		</collection>
+	</resultMap>
+
+	<select id="queryAll" resultMap="orderInfoMap">
+		select op.*, o.id as order_id, o.order_time, p.id as p_id, p.name as p_name, u.id as user_id, u.name as user_name
+		from t_user u, t_order o, t_order_product op, t_product p where u.id = o.user and o.id = op.order_id and op.product_id = p.id
+	</select>
+	
+</mapper>

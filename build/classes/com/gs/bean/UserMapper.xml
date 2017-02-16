@@ -1,0 +1,36 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gs.bean.User">
+	<!-- 结果映射，查询出来的哪个字段跟哪个属性关联到一起 
+		type表示此映射与哪个JavaBean关联在一起，可以使用JavaBean的全限定名，也可以配置的别名
+		id表示此结果映射的唯一编号
+	-->
+	<resultMap type="user" id="userMap">
+		<!-- id配置主键 -->
+		<id column="id" property="id"/>
+		<!-- result用于配置普通字段 -->
+		<result column="name" property="name"/>
+		<result column="pwd" property="pwd"/>
+	</resultMap>
+
+	<!-- 使用<select></select>用于配置查询操作
+		<delete></delele>用于配置删除操作
+		<update></update>用于配置更新操作
+		<insert></insert>用于配置插入操作
+		
+		在同一个Mapper文件中，每一个操作标记都必须有唯一的id与之对应，此id用于项目中来唯一确定需要做什么
+		
+	 -->
+	 
+	 <!-- select查询中的resultMap用于表示返回的结果映射，返回一个List列表对象 -->
+	<select id="queryUser" resultMap="userMap">
+		select * from t_user
+	</select>
+	
+	<insert id="addUser" parameterType="user">
+		insert into t_user(name, pwd) values(#{name}, #{pwd})
+	</insert>
+
+</mapper>

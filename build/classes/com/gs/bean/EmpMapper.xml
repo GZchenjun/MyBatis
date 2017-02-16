@@ -1,0 +1,35 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gs.dao.EmpDAO">
+	<resultMap type="emp" id="empMap">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<association property="dept" javaType="com.gs.bean.Dept">
+            <id property="id" column="dept_id"/>
+            <result property="name" column="dept_name" />
+        </association>
+	</resultMap>
+
+	<select id="queryAll" resultMap="empMap">
+		select e.*, d.id as dept_id, d.name as dept_name from t_emp e,t_dept d where e.dept = d.id
+	</select>
+	
+	<select id="queryById" parameterType="int" resultType="emp">
+		select * from t_emp where id = #{id}
+	</select>
+	
+	<insert id="add" parameterType="emp">
+		insert into t_emp(name) values(#{name})
+	</insert>
+	
+	<update id="update" parameterType="emp">
+		update t_emp set name = #{name} where id = #{id}
+	</update>
+	
+	<delete id="deleteById" parameterType="int">
+		delete from t_emp where id = #{id}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,19 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gs.dao.OrderDAO">
+	<resultMap type="order" id="orderMap">
+		<id column="id" property="id"/>
+		<result column="order_time" property="orderTime"/>
+		<association property="user" javaType="com.gs.bean.User">
+            <id property="id" column="user_id"/>
+            <result property="name" column="user_name" />
+        </association>
+	</resultMap>
+
+	<select id="queryAll" resultMap="orderMap">
+		select o.*, u.id as user_id, u.name as user_name from t_user u, t_order o where u.id = o.user;
+	</select>
+	
+</mapper>
